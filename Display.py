@@ -57,19 +57,30 @@ class Display(PiCamera):
         self.overlay.fullscreen = False
         self.overlay.window = (100, 100, 640, 480)
 
-    def show_image(self, image):
+    def show_image(self, img):
         if self.overlay is not None:
             self.remove_overlay(self.overlay)
 
-        pad = image
+        pad = img 
         # make sure the image has the right size and is in RGB mode
+        scale = 1
+        if img.size[0] > self.size[0]:
+            scale = self.size[0] / float(img.size[0])
+        if img.size[1] > self.size[0]:
+            yscale = self.size[1] / float(img.size[1])
+            if yscale < scale:
+                scale = yscale
+
+        scaled_size = (int(img.size[0] * scale), int(img.size[1] * scale))
+        img = img.resize(scaled_size)
+
         pad = Image.new("RGB", (
             ((img.size[0] + 31) // 32) * 32,
             ((img.size[1] + 15) // 16) * 16,
             ))
         pad.paste(img, (0, 0))
 
-        self.overlay = self.add_overlay(pad.tostring(), image.size)
+        self.overlay = self.add_overlay(pad.tostring(), img.size)
 
     def __enter__(self):
         return self
@@ -96,4 +107,4 @@ def test_display():
                 time.sleep(2)
         except KeyboardInterrupt, SystemExit:
             print("Closing app")
-test_display()
+#test_display()

@@ -54,7 +54,7 @@ class Led():
     def toggle(self):
         GPIO.output(self.pin, not GPIO.input(self.pin))
 
-#
+
 #BUTTON = 3 # connects to ground
 #LED = 4 # connects to ground
 #running = True
@@ -64,6 +64,7 @@ class Led():
 #    led = Led(LED)
 #    led.off()
 #    def t():
+#        print("Button pushed")
 #        led.toggle()
 #        
 #    button.on_pushed = t
@@ -73,8 +74,8 @@ class Led():
 # 
 #    
 #try:
-#    init()
+#    GPIO_init()
 #    print("starting")
 #    main()
 #except KeyboardInterrupt:
-#    cleanup()
+#    GPIO_cleanup()
