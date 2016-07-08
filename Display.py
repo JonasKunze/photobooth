@@ -28,7 +28,13 @@ class Display(PiCamera):
             super(Display, self).start_preview()
             self.preview.layer = 10
 
+    def remove_overlay(self, overlay):
+        super(Display, self).remove_overlay(overlay)
+        self.overlay = None
+
     def show_video_fullscreen(self):
+        if self.overlay is not None:
+            self.remove_overlay(self.overlay)
         self.start_preview()
         self.preview.fullscreen = True
         self.preview.layer = self.background
@@ -43,11 +49,13 @@ class Display(PiCamera):
     def hide_video(self):
         super(Display, self).stop_preview()
 
-    def show_image_fullscreen(self, image):
-        if self.previewing == True:
-            self.show_video_small()
+    def show_image_fullscreen(self, image, minimize_video=False):
         self.show_image(image)
         self.overlay.layer = self.background 
+        if self.previewing == True and minimize_video == True:
+            self.show_video_small()
+        else:
+            self.hide_video()
 
     def show_image_small(self, image):
         if self.previewing == True:
@@ -68,7 +76,7 @@ class Display(PiCamera):
             scale = self.size[0] / float(img.size[0])
         if img.size[1] > self.size[0]:
             yscale = self.size[1] / float(img.size[1])
-            if yscale < scale:
+            if yscale > scale:
                 scale = yscale
 
         scaled_size = (int(img.size[0] * scale), int(img.size[1] * scale))

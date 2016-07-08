@@ -21,7 +21,7 @@ class ImageAnalyzer():
     def mean_brightness(filepath):
         im = Image.open(filepath)
         stat = ImageStat.Stat(im)
-        rms = stat.rms[0]
+        rms = (stat.mean[0]+stat.mean[1]+stat.mean[2])/3
         im.close()
         return rms
 
@@ -109,3 +109,4 @@ class GPhoto(Wrapper):
             code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
         if index:
             code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(index)])
+

@@ -38,16 +38,27 @@ CONFIGS = [("1/1600", 100),
         ("1/10", 400),
         ("1/15", 800),
         ("1/13", 800),
-        ("1/10", 800)]
+        ("1/10", 800),
+        ("1/15", 1600),
+        ("1/13", 1600),
+        ("1/10", 1600),
+        ]
 
-MIN_BRIGHTNESS = 230 
-MAX_BRIGHTNESS = 250
-
-
+MIN_BRIGHTNESS = 128 
+MAX_BRIGHTNESS = 144
 
 class Cam():
     def __init__(self):
+        self.config_file = ".cam-configs" 
         self.config = len(CONFIGS)/2 
+        try:
+            with open(self.config_file, 'r') as f:
+                self.config = int(f.readline())
+                print("Found cam config file: %d"%self.config)
+        except IOError:
+            self.config = len(CONFIGS)/2
+            print("No cam config file found. Using default: %d"%self.config)
+
         self.pic_id = 0
         self.camera = GPhoto(subprocess)
         while True:
@@ -56,17 +67,20 @@ class Cam():
                 break
             except Exception as e:  
                 call(["pkill", "gvfs-gphoto2*"])
+                call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
 
     def change_setting(self, delta):
         self.config = self.config + delta
         self.camera.set_shutter_speed(secs=CONFIGS[self.config][0])
+
         self.camera.set_iso(iso=str(CONFIGS[self.config][1]))  
         print("Changed config to %s %s" % CONFIGS[self.config])
+        self.store_settings()
         return self.config
 
-    def get_brightness_adj(self):
-        brightness = float(ImageAnalyzer.mean_brightness(self.filename))
+    def get_brightness_adj(self, filename):
+        brightness = float(ImageAnalyzer.mean_brightness(filename))
 
         delta = 0
         if brightness < MIN_BRIGHTNESS and self.config < len(CONFIGS) - 1:
@@ -78,7 +92,7 @@ class Cam():
 
         print("brightness is %d"% brightness)
         optimum = (MAX_BRIGHTNESS+MIN_BRIGHTNESS)/2
-        adjustment = int(round(math.log(optimum/brightness)/math.log(1.3)))
+        adjustment = int(round(math.log(optimum/brightness)/math.log(1.2)))
         print("%d, delta is %d"% (brightness, adjustment))
 
         if self.config + adjustment > len(CONFIGS) - 1:
@@ -92,8 +106,9 @@ class Cam():
         self.filename = self.camera.capture_image_and_download()
         return self.filename
 
-    def check_brightness(self):
-        config_delta = self.get_brightness_adj()
+    def check_brightness(self, filename=None):
+        filename = filename or self.filename
+        config_delta = self.get_brightness_adj(filename)
         if config_delta != 0: 
             self.config = self.change_setting(config_delta)
             return self.config, False 
@@ -102,6 +117,10 @@ class Cam():
     def store_pic(self):
         os.rename(self.filename, "pic"+str(self.pic_id)+".jpg")
         self.pic_id += 1
+
+    def store_settings(self):
+         with open(self.config_file, 'w') as f:
+             f.write(str(self.config))
 
 
 
