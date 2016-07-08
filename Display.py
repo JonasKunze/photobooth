@@ -26,7 +26,6 @@ class Display(PiCamera):
     def start_preview(self):
         if self.previewing == False:
             super(Display, self).start_preview()
-            self.preview.layer = 10
 
     def remove_overlay(self, overlay):
         super(Display, self).remove_overlay(overlay)
@@ -41,9 +40,8 @@ class Display(PiCamera):
 
     def show_video_small(self):
         self.start_preview()
-        self.preview.fullscreen = True
+        self.preview.fullscreen = False 
         self.preview.layer = self.foreground
-        self.preview.fullscreen = False
         self.preview.window = self.small_window 
 
     def hide_video(self):
