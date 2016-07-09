@@ -1,4 +1,6 @@
+#!/usr/bin/python 
 # coding: utf-8
+
 
 from Display import Display 
 from Cam import Cam 
