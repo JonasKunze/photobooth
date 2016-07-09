@@ -49,6 +49,7 @@ CONFIGS = [("1/1600", 100),
 class Cam():
     def __init__(self):
         self.config_file = ".cam-configs" 
+        self.filename = None
         self.config = len(CONFIGS)/2 
         try:
             with open(self.config_file, 'r') as f:
@@ -111,13 +112,14 @@ class Cam():
         self.store_dirname = dirname
 
     def store_pic(self, dirname=None):
-        dirname = self.store_dirname or './'
-        print(dirname)
-        target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
-        print("Storing file at %s" % target_file)
-        os.rename(self.filename, target_file)
-        print("done")
-        self.pic_id += 1
+        if self.filename is not None:
+            dirname = self.store_dirname or './'
+            print(dirname)
+            target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
+            print("Storing file at %s" % target_file)
+            os.rename(self.filename, target_file)
+            print("done")
+            self.pic_id += 1
 
     def store_settings(self):
          with open(self.config_file, 'w') as f:

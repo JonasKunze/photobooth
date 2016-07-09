@@ -40,37 +40,39 @@ with Display(resolution) as display:
     display.show_video_small()
     display.show_video_fullscreen()
 
-    filename = "capt0000.jpg"
+    filename = "pic_0000.jpg"
 
     show_video_small_timer = None
-    show_video_fullscreen_timer = None
+
     def on_buzzer_pushed():
         print("buzzer pushed")
         global show_video_small_timer
-        global show_video_fullscreen_timer
         cancel_timer(show_video_small_timer)
-        cancel_timer(show_video_fullscreen_timer)
-        show_video_fullscreen_timer = None
+        show_video_small_timer = None
 
         display.show_video_fullscreen()
 
         time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
-        Timer(CLICK_DELAY, display.flash,()).start() 
+        #Timer(CLICK_DELAY, display.flash,()).start() 
         
-        filename = cam.take_pic()
+#        filename = cam.take_pic()
 
         with Image.open(filename) as img:
             print("showing now")
             display.show_image_fullscreen(img)
             cam.check_brightness(filename)
-            show_video_small_timer = Timer(15, display.show_video_small, ()).start()
+            show_video_small_timer = Timer(2, display.show_video_small, ())
+            show_video_small_timer.start()
             cam.store_pic(output_dir)
+
 
     button.when_pressed = on_buzzer_pushed
 
     on_buzzer_pushed()
+
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt, SystemExit:
+        cancel_timer(show_video_small_timer)
         print("Closing app")
