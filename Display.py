@@ -21,7 +21,7 @@ class Display(PiCamera):
         self.background = 1
         self.overlay = None
 
-        self.small_window = (0, 0, 640, 480)
+        self.small_window = (200, 100, 640, 480)
 
     def start_preview(self):
         if self.previewing == False:
@@ -61,7 +61,7 @@ class Display(PiCamera):
         self.show_image(image)
         self.overlay.layer = self.foreground 
         self.overlay.fullscreen = False
-        self.overlay.window = (100, 100, 640, 480)
+        self.overlay.window = self.small_window 
 
     def show_image(self, img):
         if self.overlay is not None:
@@ -84,9 +84,14 @@ class Display(PiCamera):
             ((img.size[0] + 31) // 32) * 32,
             ((img.size[1] + 15) // 16) * 16,
             ))
-        pad.paste(img, (0, 0))
+        margin = ((self.size[0] - scaled_size[0])/2, (self.size[1] - scaled_size[1])/2)
+        print(scaled_size)
+        print(self.size)
+        print(margin)
+        print("!!!")
+        pad.paste(img, margin)
 
-        self.overlay = self.add_overlay(pad.tostring(), img.size)
+        self.overlay = self.add_overlay(pad.tostring(), scaled_size)
 
     def __enter__(self):
         return self

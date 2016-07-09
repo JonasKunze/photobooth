@@ -92,7 +92,7 @@ class Cam():
 
         print("brightness is %d"% brightness)
         optimum = (MAX_BRIGHTNESS+MIN_BRIGHTNESS)/2
-        adjustment = int(round(math.log(optimum/brightness)/math.log(1.2)))
+        adjustment = int(round(math.log(optimum/brightness)/math.log(1.3)))
         print("%d, delta is %d"% (brightness, adjustment))
 
         if self.config + adjustment > len(CONFIGS) - 1:
@@ -114,8 +114,17 @@ class Cam():
             return self.config, False 
         return self.config, True
 
-    def store_pic(self):
-        os.rename(self.filename, "pic"+str(self.pic_id)+".jpg")
+    def set_pic_store_dir(self, dirname):
+        call(["mkdir", "-p", dirname])
+        self.store_dirname = dirname
+
+    def store_pic(self, dirname=None):
+        dirname = self.store_dirname or './'
+        print(dirname)
+        target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
+        print("Storing file at %s" % target_file)
+        os.rename(self.filename, target_file)
+        print("done")
         self.pic_id += 1
 
     def store_settings(self):
