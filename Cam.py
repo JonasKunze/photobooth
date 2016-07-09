@@ -8,6 +8,7 @@ import subprocess
 import math
 import os
 import time
+import traceback
 from subprocess import call
 
 BRIGHTNESS = 112 
@@ -69,6 +70,7 @@ class Cam():
                 call(["pkill", "gvfs-gphoto2*"])
                 call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
+                traceback.print_exc(e)
 
     def change_setting(self, delta):
         self.config = self.config + delta

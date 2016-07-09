@@ -1,5 +1,7 @@
 import re
 import time
+import piggyphoto
+
 
 from PIL import Image
 from PIL import ImageStat
@@ -26,35 +28,18 @@ class ImageAnalyzer():
         return rms
 
 class GPhoto(Wrapper):
-    """ A class which wraps calls to the external gphoto2 process. """
-
     def __init__(self, subprocess):
         Wrapper.__init__(self, subprocess)
         self._CMD = 'gphoto2'
-        self._shutter_choices = None
-        self._iso_choices = None
+        self.get_shutter_speeds() 
+        self.get_isos() 
 
-    def get_camera_date_time(self):
-        code, out, err = self.call(self._CMD + " --get-config /main/settings/datetime")
-        if code != 0:
-            raise Exception(err)
-        timestr = None
-        for line in out.split('\n'):
-            if line.startswith('Current:'):
-                timestr = line[line.find(':'):]
-        if not timestr:
-            raise Exception('No time parsed from ' + out)
-        stime = time.strptime(timestr, ": %Y-%m-%d %H:%M:%S")
-        return stime
+        self.piggy = piggyphoto.camera()
+        self.piggy.leave_locked()
 
     def capture_image_and_download(self):
-        code, out, err = self.call(self._CMD + " --capture-image-and-download --force-overwrite")
-        if code != 0:
-            raise Exception(err)
-        filename = None
-        for line in out.split('\n'):
-            if line.startswith('Saving file as '):
-                filename = line.split('Saving file as ')[1]
+        filename = "gphoto_capt.jpg"
+        self.capture_image('image.jpg')
         return filename
 
     def get_shutter_speeds(self):
@@ -82,10 +67,7 @@ class GPhoto(Wrapper):
         return current, choices
 
     def set_shutter_speed(self, secs):
-        code, out, err = None, None, None
-        if self._shutter_choices == None:
-            self.get_shutter_speeds()
-        code, out, err = self.call([self._CMD + " --set-config /main/capturesettings/shutterspeed=" + str(secs)])
+        self.piggy.config.main.capturesettings.shutterspeed.value = secs
 
     def get_isos(self):
         code, out, err = self.call([self._CMD + " --get-config /main/imgsettings/iso"])
@@ -95,18 +77,15 @@ class GPhoto(Wrapper):
         current = None
         for line in out.split('\n'):
             if line.startswith('Choice:'):
-                choices[line.split(' ')[2]] = line.split(' ')[1]
+                choices[line.split(' ')[2]] = int(line.split(' ')[1])
             if line.startswith('Current:'):
                 current = line.split(' ')[1]
         self._iso_choices = choices
         return current, choices
 
     def set_iso(self, iso=None, index=None):
-        code, out, err = None, None, None
         if iso:
-            if self._iso_choices == None:
-                self.get_isos()
-            code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
+            self.piggy.config.main.imgsettings.iso.value = self._iso_choices[iso]
         if index:
-            code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(index)])
+            self.piggy.config.main.imgsettings.iso.value = index
 
