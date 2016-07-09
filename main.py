@@ -11,7 +11,12 @@ import time
 
 resolution = (1280, 960)
 resolution = (1680, 1050)
-buzzer_delay = 0
+
+# time between pressing buzzer and the picture taken
+BUZZER_DELAY = 0
+
+# Time between take_pic() and the actual DSLR click
+CLICK_DELAY = 0.8
 
 BUTTON_PIN = 3
 button = Button(BUTTON_PIN)
@@ -38,6 +43,7 @@ with Display(resolution) as display:
     show_video_small_timer = None
     show_video_fullscreen_timer = None
     def on_buzzer_pushed():
+        print("buzzer pushed")
         global show_video_small_timer
         global show_video_fullscreen_timer
         cancel_timer(show_video_small_timer)
@@ -45,15 +51,17 @@ with Display(resolution) as display:
         show_video_fullscreen_timer = None
 
         display.show_video_fullscreen()
-        print("buzzer pushed")
-        time.sleep(buzzer_delay)
+
+        time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
+        Timer(CLICK_DELAY, display.flash,()).start() 
+        
         filename = cam.take_pic()
-        print("showing image %s" % filename)
+
         with Image.open(filename) as img:
             print("showing now")
             display.show_image_fullscreen(img)
             cam.check_brightness(filename)
-            show_video_small_timer = Timer(2, display.show_video_small, ()).start()
+            show_video_small_timer = Timer(15, display.show_video_small, ()).start()
             cam.store_pic(output_dir)
 
     button.when_pressed = on_buzzer_pushed

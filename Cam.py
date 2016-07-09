@@ -10,6 +10,7 @@ import os
 import time
 from subprocess import call
 
+BRIGHTNESS = 112 
 
 CONFIGS = [("1/1600", 100),
         ("1/1000", 100),
@@ -44,8 +45,6 @@ CONFIGS = [("1/1600", 100),
         ("1/10", 1600),
         ]
 
-MIN_BRIGHTNESS = 128 
-MAX_BRIGHTNESS = 144
 
 class Cam():
     def __init__(self):
@@ -82,17 +81,10 @@ class Cam():
     def get_brightness_adj(self, filename):
         brightness = float(ImageAnalyzer.mean_brightness(filename))
 
-        delta = 0
-        if brightness < MIN_BRIGHTNESS and self.config < len(CONFIGS) - 1:
-            delta = MIN_BRIGHTNESS - brightness
-            print("too dark")
-        elif brightness > MAX_BRIGHTNESS and self.config > 0:
-            delta = MAX_BRIGHTNESS - brightness 
-            print("too bright")
+        delta = BRIGHTNESS - brightness
 
         print("brightness is %d"% brightness)
-        optimum = (MAX_BRIGHTNESS+MIN_BRIGHTNESS)/2
-        adjustment = int(round(math.log(optimum/brightness)/math.log(1.3)))
+        adjustment = int(round(math.log(BRIGHTNESS/brightness)/math.log(1.4)))
         print("%d, delta is %d"% (brightness, adjustment))
 
         if self.config + adjustment > len(CONFIGS) - 1:

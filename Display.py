@@ -4,10 +4,14 @@ from picamera import PiCamera
 import io
 import time
 import numpy as np
+from threading import Timer
+from random import randint
 
 
 from PIL import Image
 from time import sleep
+
+SMALL_VIDEO_TOGGLE_TIME = 10
 
 class Display(PiCamera):
     def __init__(self, size):
@@ -20,8 +24,12 @@ class Display(PiCamera):
         self.foreground = 2
         self.background = 1
         self.overlay = None
+        self.previewing_small = False
+        self.current_small_window_id = -1
 
-        self.small_window = (200, 100, 640, 480)
+        #small window
+        self.small_window_size = (640, 480)
+        self.small_window_area = (150, 0, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
 
     def start_preview(self):
         if self.previewing == False:
@@ -37,14 +45,24 @@ class Display(PiCamera):
         self.start_preview()
         self.preview.fullscreen = True
         self.preview.layer = self.background
+        self.previewing_small = False
+
+    def toggle_small_video_position(self):
+        if self.previewing_small == True and self.closed == False:
+            x = randint(self.small_window_area[0], self.small_window_area[2]) 
+            y = randint(self.small_window_area[1], self.small_window_area[3]) 
+            self.preview.window = (x, y, self.small_window_size[0], self.small_window_size[1]) 
+            Timer(SMALL_VIDEO_TOGGLE_TIME, self.toggle_small_video_position, ()).start()
 
     def show_video_small(self):
         self.start_preview()
         self.preview.fullscreen = False 
         self.preview.layer = self.foreground
-        self.preview.window = self.small_window 
+        self.previewing_small = True 
+        self.toggle_small_video_position()
 
     def hide_video(self):
+        self.previewing_small = False 
         super(Display, self).stop_preview()
 
     def show_image_fullscreen(self, image, minimize_video=False):
@@ -85,13 +103,22 @@ class Display(PiCamera):
             ((img.size[1] + 15) // 16) * 16,
             ))
         margin = ((self.size[0] - scaled_size[0])/2, (self.size[1] - scaled_size[1])/2)
-        print(scaled_size)
-        print(self.size)
-        print(margin)
-        print("!!!")
         pad.paste(img, margin)
 
         self.overlay = self.add_overlay(pad.tostring(), scaled_size)
+
+    def flash(self):
+        image = Image.new("RGB", self.size, (255, 255, 255))
+        self.show_image(image)
+        self.overlay.layer = self.foreground + 1
+        self.overlay.fullscreen = True
+
+        alpha = 255
+        while self.overlay.alpha > 2:
+            alpha = alpha/1.02
+            self.overlay.alpha = int(alpha) 
+            time.sleep(0.01)
+        self.remove_overlay(self.overlay)
 
     def __enter__(self):
         return self
