@@ -37,8 +37,8 @@ cam = Cam()
 cam.set_pic_store_dir(output_dir)
 with Display(resolution) as display:
 
-    display.show_video_small()
-    display.show_video_fullscreen()
+#    display.show_video_small()
+#    display.show_video_fullscreen()
 
     filename = "pic_0000.jpg"
 
@@ -53,15 +53,14 @@ with Display(resolution) as display:
         display.show_video_fullscreen()
 
         time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
-        #Timer(CLICK_DELAY, display.flash,()).start() 
+        Timer(CLICK_DELAY, display.flash,()).start() 
         
-#        filename = cam.take_pic()
+        filename = cam.take_pic()
 
         with Image.open(filename) as img:
-            print("showing now")
             display.show_image_fullscreen(img)
             cam.check_brightness(filename)
-            show_video_small_timer = Timer(2, display.show_video_small, ())
+            show_video_small_timer = Timer(5, display.show_video_small, ())
             show_video_small_timer.start()
             cam.store_pic(output_dir)
 
