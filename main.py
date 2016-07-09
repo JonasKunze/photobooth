@@ -6,7 +6,7 @@ from Display import Display
 from Cam import Cam 
 from PIL import Image
 from gpiozero import LED, Button
-from threading import Timer
+from threading import Timer, Thread
 import datetime
 
 import time
@@ -32,6 +32,9 @@ def cancel_timer(timer):
             timer.cancel()
         except:
             pass
+def process_image(cam, filename):
+    cam.check_brightness(filename)
+    cam.store_pic(output_dir)
 
 cam = Cam()
 cam.set_pic_store_dir(output_dir)
@@ -59,10 +62,12 @@ with Display(resolution) as display:
 
         with Image.open(filename) as img:
             display.show_image_fullscreen(img)
-            cam.check_brightness(filename)
+            img_processor = Thread(target=process_image, args=(cam, filename))
+            img_processor.start()
+
             show_video_small_timer = Timer(5, display.show_video_small, ())
             show_video_small_timer.start()
-            cam.store_pic(output_dir)
+            print("done")
 
 
     button.when_pressed = on_buzzer_pushed

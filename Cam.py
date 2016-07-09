@@ -118,7 +118,6 @@ class Cam():
             target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
             print("Storing file at %s" % target_file)
             os.rename(self.filename, target_file)
-            print("done")
             self.pic_id += 1
 
     def store_settings(self):
