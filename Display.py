@@ -29,9 +29,11 @@ class Display(PiCamera):
         self.toggle_timers = [None]*len(self.all_overlays) 
         self.previewing_small = False
         self.current_small_window_id = -1
+        self.zoom=(0.1, 0.1, 1, 1)
+        self.fullscreen_window = (176, -3, self.size[0], self.size[1]) 
 
         #small window
-        self.small_window_size = (640, 480)
+        self.small_window_size = (int(size[0]/2.5), int(size[1]/2.5))
         self.small_window_area = (150, 0, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
 
     def start_preview(self):
@@ -56,8 +58,11 @@ class Display(PiCamera):
         self.clear_layer(layer)
 
         self.start_preview()
-        self.preview.fullscreen = True
+        self.preview.fullscreen =False 
         self.preview.layer = layer 
+
+        # correction for weird vga display
+        self.preview.window = self.fullscreen_window 
         self.previewing_small = False
         print("Showing fullscreen video on layer %d"%layer)
 
@@ -93,7 +98,9 @@ class Display(PiCamera):
 
     def show_image_fullscreen(self, image, layer=BACKGROUND, minimize_hide_or_keep_video='hide'):
         self.clear_layer(layer)
-        overlay = self.show_image(image, layer, True)
+        overlay = self.show_image(image, layer, self.size)
+        overlay.window = self.fullscreen_window
+
         if self.previewing == True:
             if minimize_hide_or_keep_video == 'minimize':    
                 self.show_video_small()
@@ -107,38 +114,38 @@ class Display(PiCamera):
             self.show_video_fullscreen()
         self.clear_layer(layer)
 
-        overlay = self.show_image(image, layer, False)
+        overlay = self.show_image(image, layer, self.small_window_size)
         self.toggle_small_window_position(overlay)
         print("Showing small image on layer %d"%layer)
         return overlay
 
-    def show_image(self, img, layer, fullscreen):
+    def show_image(self, img, layer, size):
         self.clear_layer(layer)
+        size = ( 
+                    (size[0] // 32) * 32,
+                    (size[1] // 16) * 16,
+                )
 
-        pad = img 
+
         # make sure the image has the right size and is in RGB mode
         scale = 1
-        if img.size[0] > self.size[0]:
-            scale = self.size[0] / float(img.size[0])
-        if img.size[1] > self.size[0]:
-            yscale = self.size[1] / float(img.size[1])
+        if img.size[0] > size[0]:
+            scale = size[0] / float(img.size[0])
+        if img.size[1] > size[0]:
+            yscale = size[1] / float(img.size[1])
             if yscale > scale:
                 scale = yscale
 
         scaled_size = (int(img.size[0] * scale), int(img.size[1] * scale))
         img = img.resize(scaled_size)
 
-        pad = Image.new("RGB", (
-            ((img.size[0] + 31) // 32) * 32,
-            ((img.size[1] + 15) // 16) * 16,
-            ))
-        margin = ((self.size[0] - scaled_size[0])/2, (self.size[1] - scaled_size[1])/2)
-        pad.paste(img, margin)
+        margin = ((img.size[0] - size[0])/2, (img.size[1] - size[1])/2)
+        img = img.crop((margin[0], margin[1], img.size[0]-margin[0], img.size[1]-margin[1]))
 
-        overlay = self.add_overlay(pad.tostring(), scaled_size)
+        overlay = self.add_overlay(img.tostring(), img.size)
         self.all_overlays[layer] = overlay
-        overlay.fullscreen = fullscreen 
         overlay.layer = layer
+        overlay.fullscreen = False
         return overlay
 
     def flash(self):
@@ -150,8 +157,9 @@ class Display(PiCamera):
         alpha = 255
         overlay.alpha = alpha
         while alpha > 0.5:
-            alpha = alpha/1.02
+            alpha = alpha/1.1
             overlay.alpha = int(alpha) 
+            sleep(0.05)
         self.clear_layer(layer)
 
     def __enter__(self):

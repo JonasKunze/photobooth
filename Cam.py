@@ -2,15 +2,17 @@
 
 from gphoto import GPhoto
 from gphoto import ImageAnalyzer 
-import RPi.GPIO as GPIO
-from gpio import *
 import subprocess
 import math
 import os
 import time
 from subprocess import call
+from gpiozero import LED
 
 BRIGHTNESS = 112 
+
+LED_HIGH_PIN = 13
+LED_LOW_PIN = 26 
 
 CONFIGS = [("1/1600", 100),
         ("1/1000", 100),
@@ -64,6 +66,10 @@ class Cam():
                 call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
         self.active = True
+        self.led_high = LED(LED_HIGH_PIN)
+        self.led_low = LED(LED_LOW_PIN)
+        self.led_high.on()
+        self.led_low.on()
 
     def change_setting(self, delta):
         self.config = self.config + delta
@@ -79,9 +85,18 @@ class Cam():
 
         delta = self.brightness - brightness
 
-        print("brightness is %d"% brightness)
-        adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.3)))
-        print("%d, delta is %d"% (brightness, adjustment))
+        adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.15)))
+        print("brightness: %d, delta: %d"% (brightness, adjustment))
+
+        print("setting all off")
+        self.led_low.off()
+        self.led_high.off()
+        if adjustment < 0:
+            print("setting high on")
+            self.led_high.on()
+        if adjustment > 0:
+            print("setting low on")
+            self.led_low.on()
 
         if self.config + adjustment > len(CONFIGS) - 1:
             return len(CONFIGS)-1 - self.config
@@ -91,6 +106,8 @@ class Cam():
         return adjustment 
 
     def take_pic(self):
+        self.led_low.on()
+        self.led_high.on()
         self.filename = self.camera.capture_image_and_download()
         return self.filename
 
