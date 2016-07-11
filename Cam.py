@@ -63,6 +63,7 @@ class Cam():
                 call(["pkill", "gvfs-gphoto2*"])
                 call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
+        self.active = True
 
     def change_setting(self, delta):
         self.config = self.config + delta
@@ -79,7 +80,7 @@ class Cam():
         delta = self.brightness - brightness
 
         print("brightness is %d"% brightness)
-        adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.4)))
+        adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.3)))
         print("%d, delta is %d"% (brightness, adjustment))
 
         if self.config + adjustment > len(CONFIGS) - 1:
@@ -121,8 +122,16 @@ class Cam():
             print(dirname)
             target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
             print("Storing file at %s" % target_file)
-            os.rename(self.filename, target_file)
+            try:
+                os.rename(self.filename, target_file)
+                print("success")
+            except:
+                print("Unable to store file at %s"%target_file)
+                self.active = False
+                quit()
+
             self.pic_id += 1
+
     def load_config(self):
         try:
             with open(self.config_file, 'r') as f:
@@ -138,6 +147,9 @@ class Cam():
          with open(self.config_file, 'w') as f:
              f.write("%d\n"%self.config)
              f.write(str(self.brightness))
+
+    def is_active(self):
+        return self.active
 
 
 

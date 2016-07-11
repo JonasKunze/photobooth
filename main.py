@@ -55,9 +55,9 @@ def set_brightness_leds(delta):
     led_low.off()
     led_high.off()
     if delta > 0:
-        led_high.on()
-    if delta < 0:
         led_low.on()
+    if delta < 0:
+        led_high.on()
 
 
 def process_image(cam, filename):
@@ -103,7 +103,7 @@ with Display(resolution) as display:
     on_buzzer_pushed()
 
     try:
-        while True:
+        while cam.is_active():
             time.sleep(1)
     except KeyboardInterrupt, SystemExit:
         cancel_timer(show_video_small_timer)
