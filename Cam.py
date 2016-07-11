@@ -50,14 +50,8 @@ class Cam():
     def __init__(self):
         self.config_file = ".cam-configs" 
         self.filename = None
-        self.config = len(CONFIGS)/2 
-        try:
-            with open(self.config_file, 'r') as f:
-                self.config = int(f.readline())
-                print("Found cam config file: %d"%self.config)
-        except IOError:
-            self.config = len(CONFIGS)/2
-            print("No cam config file found. Using default: %d"%self.config)
+
+        self.load_config()
 
         self.pic_id = 0
         self.camera = GPhoto(subprocess)
@@ -82,10 +76,10 @@ class Cam():
     def get_brightness_adj(self, filename):
         brightness = float(ImageAnalyzer.mean_brightness(filename))
 
-        delta = BRIGHTNESS - brightness
+        delta = self.brightness - brightness
 
         print("brightness is %d"% brightness)
-        adjustment = int(round(math.log(BRIGHTNESS/brightness)/math.log(1.4)))
+        adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.4)))
         print("%d, delta is %d"% (brightness, adjustment))
 
         if self.config + adjustment > len(CONFIGS) - 1:
@@ -105,7 +99,17 @@ class Cam():
         if config_delta != 0: 
             self.config = self.change_setting(config_delta)
             return self.config, False 
-        return self.config, True
+        return config_delta
+
+    def increase_brightness(self):
+        print("increasing brightness")
+        self.brightness += 8
+        self.change_setting(1)
+
+    def decrease_brightness(self):
+        print("decreasing brightness")
+        self.brightness -= 8
+        self.change_setting(-1)
 
     def set_pic_store_dir(self, dirname):
         call(["mkdir", "-p", dirname])
@@ -119,10 +123,21 @@ class Cam():
             print("Storing file at %s" % target_file)
             os.rename(self.filename, target_file)
             self.pic_id += 1
+    def load_config(self):
+        try:
+            with open(self.config_file, 'r') as f:
+                self.config = int(f.readline())
+                self.brightness = int(f.readline())
+                print("Found cam config file: %d %d"%(self.config, self.brightness))
+        except IOError:
+            self.config = len(CONFIGS)/2
+            self.brightness = BRIGHTNESS
+            print("No cam config file found. Using default: %d %d"%(self.config, self.brightness))
 
     def store_settings(self):
          with open(self.config_file, 'w') as f:
-             f.write(str(self.config))
+             f.write("%d\n"%self.config)
+             f.write(str(self.brightness))
 
 
 

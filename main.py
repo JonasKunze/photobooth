@@ -11,8 +11,9 @@ import datetime
 
 import time
 
+#resolution = (1680, 1050)
 resolution = (1280, 960)
-resolution = (1680, 1050)
+resolution = (1260, 788)
 
 # time between pressing buzzer and the picture taken
 BUZZER_DELAY = 0
@@ -20,8 +21,25 @@ BUZZER_DELAY = 0
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.8
 
-BUTTON_PIN = 3
-button = Button(BUTTON_PIN)
+BUZZER_PIN = 3
+BUTTON_UP_PIN = 5
+BUTTON_DOWN_PIN = 6
+LED_HIGH_PIN = 13
+LED_LOW_PIN = 26 
+
+buzzer = Button(BUZZER_PIN)
+button_up = Button(BUTTON_UP_PIN, bounce_time=0.1)
+button_down = Button(BUTTON_DOWN_PIN, bounce_time=0.1)
+led_high = LED(LED_HIGH_PIN)
+led_low = LED(LED_LOW_PIN)
+
+def high_on():
+    led_low.on()
+def high_off():
+    led_low.off()
+led_high.on()
+led_low.on()
+
 
 date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 output_dir = './pics/%s' % date_str
@@ -32,15 +50,26 @@ def cancel_timer(timer):
             timer.cancel()
         except:
             pass
+
+def set_brightness_leds(delta):
+    led_low.off()
+    led_high.off()
+    if delta > 0:
+        led_high.on()
+    if delta < 0:
+        led_low.on()
+
+
 def process_image(cam, filename):
-    cam.check_brightness(filename)
+    delta = cam.check_brightness(filename)
+    set_brightness_leds(delta)
     cam.store_pic(output_dir)
 
 cam = Cam()
 cam.set_pic_store_dir(output_dir)
+button_up.when_pressed = cam.increase_brightness 
+button_down.when_pressed = cam.decrease_brightness
 with Display(resolution) as display:
-
-#    display.show_video_small()
 #    display.show_video_fullscreen()
 
     filename = "pic_0000.jpg"
@@ -67,10 +96,9 @@ with Display(resolution) as display:
 
             show_video_small_timer = Timer(5, display.show_video_small, ())
             show_video_small_timer.start()
-            print("done")
 
 
-    button.when_pressed = on_buzzer_pushed
+    buzzer.when_pressed = on_buzzer_pushed
 
     on_buzzer_pushed()
 
