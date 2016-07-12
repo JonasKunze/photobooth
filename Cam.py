@@ -62,8 +62,8 @@ class Cam():
                 self.change_setting(0)
                 break
             except Exception as e:  
-                call(["pkill", "gvfs-gphoto2*"])
-                call(["killall", "-9", "gvfsd-gphoto2"])
+            #    call(["pkill", "gvfs-gphoto2*"])
+            #    call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
         self.active = True
         self.led_high = LED(LED_HIGH_PIN)
@@ -75,7 +75,7 @@ class Cam():
         self.config = self.config + delta
         self.camera.set_shutter_speed(secs=CONFIGS[self.config][0])
 
-        self.camera.set_iso(iso=str(CONFIGS[self.config][1]))  
+        self.camera.set_iso(CONFIGS[self.config][1])  
         print("Changed config to %s %s" % CONFIGS[self.config])
         self.store_settings()
         return self.config
@@ -88,14 +88,11 @@ class Cam():
         adjustment = int(round(math.log(self.brightness/brightness)/math.log(1.15)))
         print("brightness: %d, delta: %d"% (brightness, adjustment))
 
-        print("setting all off")
         self.led_low.off()
         self.led_high.off()
         if adjustment < 0:
-            print("setting high on")
             self.led_high.on()
         if adjustment > 0:
-            print("setting low on")
             self.led_low.on()
 
         if self.config + adjustment > len(CONFIGS) - 1:

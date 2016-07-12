@@ -31,6 +31,7 @@ class Display(PiCamera):
         self.current_small_window_id = -1
         self.zoom=(0.1, 0.1, 1, 1)
         self.fullscreen_window = (176, -3, self.size[0], self.size[1]) 
+        self.is_flashing = False
 
         #small window
         self.small_window_size = (int(size[0]/2.5), int(size[1]/2.5))
@@ -139,7 +140,7 @@ class Display(PiCamera):
         scaled_size = (int(img.size[0] * scale), int(img.size[1] * scale))
         img = img.resize(scaled_size)
 
-        margin = ((img.size[0] - size[0])/2, (img.size[1] - size[1])/2)
+        margin = (int((img.size[0] - size[0])/2), int((img.size[1] - size[1])/2))
         img = img.crop((margin[0], margin[1], img.size[0]-margin[0], img.size[1]-margin[1]))
 
         overlay = self.add_overlay(img.tostring(), img.size)
@@ -149,6 +150,10 @@ class Display(PiCamera):
         return overlay
 
     def flash(self):
+        if self.is_flashing == True:
+            return
+        self.is_flashing = True
+
         print("flashing")
         layer = 5 
         image = Image.new("RGB", self.size, (255, 255, 255))
@@ -159,8 +164,9 @@ class Display(PiCamera):
         while alpha > 0.5:
             alpha = alpha/1.1
             overlay.alpha = int(alpha) 
-            sleep(0.05)
+            sleep(0.07)
         self.clear_layer(layer)
+        self.is_flashing = False 
 
     def __enter__(self):
         return self
@@ -190,6 +196,6 @@ def test_display():
         try:
             while True:
                 time.sleep(2)
-        except KeyboardInterrupt, SystemExit:
+        except (KeyboardInterrupt, SystemExit) as e:
             print("Closing app")
 #test_display()

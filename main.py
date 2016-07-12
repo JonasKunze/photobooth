@@ -16,7 +16,7 @@ resolution = (1440, 1050)
 BUZZER_DELAY = 0
 
 # Time between take_pic() and the actual DSLR click
-CLICK_DELAY = 0.8
+CLICK_DELAY = 0.2
 
 BUZZER_PIN = 3
 BUTTON_UP_PIN = 5
@@ -48,6 +48,9 @@ button_up.when_pressed = cam.increase_brightness
 button_down.when_pressed = cam.decrease_brightness
 with Display(resolution) as display:
     display.show_video_fullscreen()
+    
+#    with Image.open(".capture.jpg") as img:
+#        display.show_image_fullscreen(img)
 
     show_video_small_timer = None
 
@@ -80,6 +83,6 @@ with Display(resolution) as display:
     try:
         while cam.is_active():
             time.sleep(1)
-    except KeyboardInterrupt, SystemExit:
+    except (KeyboardInterrupt, SystemExit) as e:
         cancel_timer(show_video_small_timer)
         print("Closing app")

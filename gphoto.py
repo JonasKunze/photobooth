@@ -4,6 +4,8 @@ import time
 from PIL import Image
 from PIL import ImageStat
 
+import piggyphoto
+
 class Wrapper(object):
 
     def __init__(self, subprocess):
@@ -31,82 +33,29 @@ class GPhoto(Wrapper):
     def __init__(self, subprocess):
         Wrapper.__init__(self, subprocess)
         self._CMD = 'gphoto2'
-        self._shutter_choices = None
-        self._iso_choices = None
-
-    def get_camera_date_time(self):
-        code, out, err = self.call(self._CMD + " --get-config /main/settings/datetime")
-        if code != 0:
-            raise Exception(err)
-        timestr = None
-        for line in out.split('\n'):
-            if line.startswith('Current:'):
-                timestr = line[line.find(':'):]
-        if not timestr:
-            raise Exception('No time parsed from ' + out)
-        stime = time.strptime(timestr, ": %Y-%m-%d %H:%M:%S")
-        return stime
+        self.get_isos()
+        self.piggy = piggyphoto.Camera()
+#        self.piggy.leave_locked()
 
     def capture_image_and_download(self):
-        code, out, err = self.call(self._CMD + " --capture-image-and-download --force-overwrite")
-        if code != 0:
-            raise Exception(err)
-        filename = None
-        for line in out.split('\n'):
-            if line.startswith('Saving file as '):
-                filename = line.split('Saving file as ')[1]
+        filename = ".capture.jpg"
+        self.piggy.capture_image(filename)
         return filename
 
-    def get_shutter_speeds(self):
-        code, out, err = self.call([self._CMD + " --get-config /main/capturesettings/shutterspeed"])
-        if code != 0:
-            raise Exception(err)
-        choices = [] 
-        current = None
-        for line in out.split('\n'):
-            if line.startswith('Choice:'):
-                index = line.split(' ')[1]
-                name = line.split(' ')[2]
-                value = line.split(' ')[2]
-                if "." not in value:
-                    value = value+"."
-                entry = {
-                'value' : eval(value),
-                'index' : index,
-                'name' : name
-                }
-                choices.append(entry) 
-            if line.startswith('Current:'):
-                current = line.split(' ')[1]
-        self._shutter_choices = choices
-        return current, choices
-
     def set_shutter_speed(self, secs):
-        code, out, err = None, None, None
-        if self._shutter_choices == None:
-            self.get_shutter_speeds()
+        print("Setting shutter_speed to %s"%secs)
+        self.piggy.close()
+#        self.piggy.config.main.capturesettings.shutterspeed.value = secs
         code, out, err = self.call([self._CMD + " --set-config /main/capturesettings/shutterspeed=" + str(secs)])
+        self.piggy = piggyphoto.Camera()
 
     def get_isos(self):
-        code, out, err = self.call([self._CMD + " --get-config /main/imgsettings/iso"])
-        if code != 0:
-            raise Exception(err)
-        choices = {}
-        current = None
-        for line in out.split('\n'):
-            if line.startswith('Choice:'):
-                choices[line.split(' ')[2]] = line.split(' ')[1]
-            if line.startswith('Current:'):
-                current = line.split(' ')[1]
-        self._iso_choices = choices
-        return current, choices
+        self._iso_choices = {100:0, 200:1, 400:2, 800:3, 1600:4} 
 
-    def set_iso(self, iso=None, index=None):
-        code, out, err = None, None, None
-        if iso:
-            if self._iso_choices == None:
-                self.get_isos()
-            code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
-        if index:
-            code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(index)])
+    def set_iso(self, iso):
+        #self.piggy.config.main.imgsettings.iso.value = self._iso_choices[iso] 
+        self.piggy.close()
+        code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
+        self.piggy = piggyphoto.Camera()
+
 
