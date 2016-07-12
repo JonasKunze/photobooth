@@ -56,14 +56,14 @@ class Cam():
         self.load_config()
 
         self.pic_id = 0
-        self.camera = GPhoto(subprocess)
         while True:
             try:
+                self.camera = GPhoto(subprocess)
                 self.change_setting(0)
                 break
             except Exception as e:  
-            #    call(["pkill", "gvfs-gphoto2*"])
-            #    call(["killall", "-9", "gvfsd-gphoto2"])
+                call(["pkill", "gvfs-gphoto2*"])
+                call(["killall", "-9", "gvfsd-gphoto2"])
                 print("Exception caught: {0}".format(e))
         self.active = True
         self.led_high = LED(LED_HIGH_PIN)
