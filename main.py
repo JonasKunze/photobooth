@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python3
 # coding: utf-8
 
 
@@ -16,7 +16,7 @@ resolution = (1440, 1050)
 BUZZER_DELAY = 0
 
 # Time between take_pic() and the actual DSLR click
-CLICK_DELAY = 0.2
+CLICK_DELAY = 0.3
 
 BUZZER_PIN = 3
 BUTTON_UP_PIN = 5

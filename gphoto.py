@@ -13,7 +13,7 @@ class Wrapper(object):
 
     def call(self, cmd):
         p = self._subprocess.Popen(cmd, shell=True, stdout=self._subprocess.PIPE,
-            stderr=self._subprocess.PIPE)
+            stderr=self._subprocess.PIPE, universal_newlines=True)
         out, err = p.communicate()
         return p.returncode, out.rstrip(), err.rstrip()
 
@@ -35,9 +35,11 @@ class GPhoto(Wrapper):
         self._CMD = 'gphoto2'
         self.get_isos()
         self.piggy = piggyphoto.Camera()
-#        self.piggy.leave_locked()
 
     def capture_image_and_download(self):
+        while self.piggy is None:
+            print("waiting")
+            time.sleep(1)
         filename = ".capture.jpg"
         self.piggy.capture_image(filename)
         return filename
@@ -45,17 +47,30 @@ class GPhoto(Wrapper):
     def set_shutter_speed(self, secs):
         print("Setting shutter_speed to %s"%secs)
         self.piggy.close()
+        self.piggy = None
 #        self.piggy.config.main.capturesettings.shutterspeed.value = secs
-        code, out, err = self.call([self._CMD + " --set-config /main/capturesettings/shutterspeed=" + str(secs)])
+        while True:
+            code, out, err = self.call([self._CMD + " --set-config /main/capturesettings/shutterspeed=" + str(secs)])
+            if err != "":
+                print(err)
+            else:
+                break
         self.piggy = piggyphoto.Camera()
 
     def get_isos(self):
         self._iso_choices = {100:0, 200:1, 400:2, 800:3, 1600:4} 
 
     def set_iso(self, iso):
+        print("Setting iso to %d"%iso)
         #self.piggy.config.main.imgsettings.iso.value = self._iso_choices[iso] 
         self.piggy.close()
-        code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
+        self.piggy = None
+        while True:
+            code, out, err = self.call([self._CMD + " --set-config /main/imgsettings/iso=" + str(self._iso_choices[iso])])
+            if err != "":
+                print(err)
+            else:
+                break
         self.piggy = piggyphoto.Camera()
 
 
