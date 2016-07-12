@@ -164,6 +164,8 @@ class Cam():
 
     def is_active(self):
         return self.active
+    def stop(self):
+        self.active = False
 
 
 

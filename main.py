@@ -65,7 +65,11 @@ with Display(resolution) as display:
         time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
         Timer(CLICK_DELAY, display.flash,()).start() 
         
-        filename = cam.take_pic()
+        try:
+            filename = cam.take_pic()
+        except:
+            cam.stop()
+            return
 
         with Image.open(filename) as img:
             display.show_image_fullscreen(img)
