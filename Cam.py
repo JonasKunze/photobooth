@@ -132,7 +132,7 @@ class Cam():
 
     def store_pic(self, dirname=None):
         if self.filename is not None:
-            dirname = self.store_dirname or './'
+            dirname = dirname or self.store_dirname 
             print(dirname)
             target_file = "%s/pic_%04d.jpg" % (dirname, self.pic_id)
             print("Storing file at %s" % target_file)
@@ -145,6 +145,10 @@ class Cam():
                 quit()
 
             self.pic_id += 1
+    def get_all_pics(self, dirname=None):
+        dirname = dirname or self.store_dirname 
+        code, out, err = self.camera.call(["find %s -name '*.jpg'"%dirname])  
+        return out.splitlines()
 
     def load_config(self):
         try:
@@ -164,6 +168,7 @@ class Cam():
 
     def is_active(self):
         return self.active
+
     def stop(self):
         self.active = False
 

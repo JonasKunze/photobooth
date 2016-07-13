@@ -12,6 +12,7 @@ from PIL import Image
 from time import sleep
 
 SMALL_VIDEO_TOGGLE_TIME = 5 
+FULLSCREEN_IMAGE_TOGGLE_TIME = 10 
 
 
 BACKGROUND = 1
@@ -34,8 +35,8 @@ class Display(PiCamera):
         self.is_flashing = False
 
         #small window
-        self.small_window_size = (int(size[0]/2.5), int(size[1]/2.5))
-        self.small_window_area = (150, 0, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
+        self.small_window_size = (int(size[0]/2.8), int(size[1]/2.8))
+        self.small_window_area = (175, -3, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
 
     def start_preview(self):
         if self.previewing == True:
@@ -45,14 +46,14 @@ class Display(PiCamera):
             super(Display, self).start_preview()
 
     def clear_layer(self, layer):
-        if self.all_overlays[layer] is not None:
-            print("Clearing layer %d"%layer)
-            self.remove_overlay(self.all_overlays[layer])
-            self.all_overlays[layer] = None
         timer = self.toggle_timers[layer]
         if timer is not None:
             timer.cancel()
             self.toggle_timers[layer] = None
+        if self.all_overlays[layer] is not None:
+            print("Clearing layer %d"%layer)
+            self.remove_overlay(self.all_overlays[layer])
+            self.all_overlays[layer] = None
 
 
     def show_video_fullscreen(self, layer=BACKGROUND):
@@ -96,6 +97,19 @@ class Display(PiCamera):
         print("hiding video")
         self.previewing_small = False 
         super(Display, self).stop_preview()
+        if self.preview is not None:
+            self.clear_layer(self.preview.layer)
+
+    def show_images_fullscreen(self, image_paths, layer=BACKGROUND, minimize_hide_or_keep_video='hide'):
+        timer = self.toggle_timers[layer]
+        if timer is not None:
+            timer.cancel()
+        with Image.open(image_paths[randint(0, len(image_paths)-1)]) as image: 
+            self.show_image_fullscreen(image, layer, 'hide')
+
+        timer = self.toggle_timers[layer] = Timer(FULLSCREEN_IMAGE_TOGGLE_TIME, self.show_images_fullscreen, (image_paths, layer, minimize_hide_or_keep_video))
+        self.toggle_timers[layer] = timer
+        timer.start()
 
     def show_image_fullscreen(self, image, layer=BACKGROUND, minimize_hide_or_keep_video='hide'):
         self.clear_layer(layer)

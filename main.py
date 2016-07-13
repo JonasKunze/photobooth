@@ -13,7 +13,7 @@ import time
 resolution = (1440, 1050)
 
 # time between pressing buzzer and the picture taken
-BUZZER_DELAY = 0
+BUZZER_DELAY = 2
 
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.3
@@ -26,10 +26,9 @@ buzzer = Button(BUZZER_PIN)
 button_up = Button(BUTTON_UP_PIN, bounce_time=0.1)
 button_down = Button(BUTTON_DOWN_PIN, bounce_time=0.1)
 
-
-
 date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-output_dir = './pics/%s' % date_str
+pics_dir = './pics'
+output_dir = '%s/%s' % (pics_dir, date_str)
 
 def cancel_timer(timer):
     if timer != None:
@@ -53,12 +52,16 @@ with Display(resolution) as display:
 #        display.show_image_fullscreen(img)
 
     show_video_small_timer = None
+    show_history_timer = None
 
     def on_buzzer_pushed():
         print("buzzer pushed")
         global show_video_small_timer
+        global show_history_timer
         cancel_timer(show_video_small_timer)
+        cancel_timer(show_history_timer)
         show_video_small_timer = None
+        show_history_timer = None
 
         display.show_video_fullscreen()
 
@@ -79,6 +82,9 @@ with Display(resolution) as display:
             show_video_small_timer = Timer(5, display.show_video_small, ())
             show_video_small_timer.start()
 
+            show_history_timer = Timer(45, display.show_images_fullscreen, [cam.get_all_pics(pics_dir)])
+            show_history_timer.start()
+
 
     buzzer.when_pressed = on_buzzer_pushed
 
@@ -89,4 +95,5 @@ with Display(resolution) as display:
             time.sleep(1)
     except (KeyboardInterrupt, SystemExit) as e:
         cancel_timer(show_video_small_timer)
+        cancel_timer(show_history_timer)
         print("Closing app")
