@@ -16,7 +16,7 @@ resolution = (1440, 1050)
 BUZZER_DELAY = 2
 
 # Time between take_pic() and the actual DSLR click
-CLICK_DELAY = 0.3
+CLICK_DELAY = 0.25
 
 BUZZER_PIN = 3
 BUTTON_UP_PIN = 5
@@ -79,7 +79,7 @@ with Display(resolution) as display:
             img_processor = Thread(target=process_image, args=(cam, filename))
             img_processor.start()
 
-            show_video_small_timer = Timer(5, display.show_video_small, ())
+            show_video_small_timer = Timer(10, display.show_video_small, ())
             show_video_small_timer.start()
 
             show_history_timer = Timer(45, display.show_images_fullscreen, [cam.get_all_pics(pics_dir)])

@@ -8,7 +8,7 @@ uninstall:
 	rm /etc/service/photobooth
 
 start:
-	python main.py
+	python3 main.py
 
 start-service:
 	svc -u service
