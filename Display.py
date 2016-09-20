@@ -112,7 +112,6 @@ class Display(PiCamera):
         timer.start()
 
     def show_image_fullscreen(self, image, layer=BACKGROUND, minimize_hide_or_keep_video='hide'):
-        self.clear_layer(layer)
         overlay = self.show_image(image, layer, self.size)
         overlay.window = self.fullscreen_window
 
@@ -127,7 +126,6 @@ class Display(PiCamera):
     def show_image_small(self, image, layer=FOREGROUND):
         if self.previewing == True:
             self.show_video_fullscreen()
-        self.clear_layer(layer)
 
         overlay = self.show_image(image, layer, self.small_window_size)
         self.toggle_small_window_position(overlay)
@@ -135,7 +133,6 @@ class Display(PiCamera):
         return overlay
 
     def show_image(self, img, layer, size):
-        self.clear_layer(layer)
         size = ( 
                     (size[0] // 32) * 32,
                     (size[1] // 16) * 16,
@@ -156,6 +153,8 @@ class Display(PiCamera):
 
         margin = (int((img.size[0] - size[0])/2), int((img.size[1] - size[1])/2))
         img = img.crop((margin[0], margin[1], img.size[0]-margin[0], img.size[1]-margin[1]))
+
+        self.clear_layer(layer)
 
         overlay = self.add_overlay(img.tostring(), img.size)
         self.all_overlays[layer] = overlay

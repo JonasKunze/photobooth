@@ -21,14 +21,20 @@ CLICK_DELAY = 0.25
 BUZZER_PIN = 3
 BUTTON_UP_PIN = 5
 BUTTON_DOWN_PIN = 6
+BUTTON_NEXT = 10
+BUTTON_PREV = 11
 
 buzzer = Button(BUZZER_PIN)
 button_up = Button(BUTTON_UP_PIN, bounce_time=0.1)
 button_down = Button(BUTTON_DOWN_PIN, bounce_time=0.1)
+button_next = Button(BUTTON_NEXT, bounce_time=0.1)
+button_prev = Button(BUTTON_PREV, bounce_time=0.1)
 
 date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 pics_dir = './pics'
 output_dir = '%s/%s' % (pics_dir, date_str)
+
+pic_shown = -1 
 
 def cancel_timer(timer):
     if timer != None:
@@ -86,8 +92,52 @@ with Display(resolution) as display:
             show_history_timer.start()
 
 
-    buzzer.when_pressed = on_buzzer_pushed
+    def on_next_pushed():
+        print("next pushed")
+        global show_video_small_timer
+        global show_history_timer
+        global pic_shown
+        cancel_timer(show_video_small_timer)
+        cancel_timer(show_history_timer)
+        show_video_small_timer = None
+        show_history_timer = None
 
+        images = cam.get_all_pics(pics_dir)
+        if pic_shown > -1:
+            if pic_shown < len(images) - 1:
+                pic_shown = pic_shown + 1
+            else:
+                pic_shown = -1
+                display.show_video_fullscreen()
+        if pic_shown > -1 and len(images) > 0: 
+            with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
+                display.show_image_fullscreen(image)
+
+    def on_prev_pushed():
+        print("prev pushed")
+        global show_video_small_timer
+        global show_history_timer
+        global pic_shown
+        cancel_timer(show_video_small_timer)
+        cancel_timer(show_history_timer)
+        show_video_small_timer = None
+        show_history_timer = None
+
+        images = cam.get_all_pics(pics_dir)
+        if pic_shown > 0:
+            pic_shown = pic_shown - 1
+        else:
+            pic_shown = len(images) - 1
+        if len(images) > 0:
+            with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
+                display.show_image_fullscreen(image)
+ 
+
+    buzzer.when_pressed = on_buzzer_pushed
+    button_next.when_pressed = on_next_pushed
+    button_prev.when_pressed = on_prev_pushed
+
+    on_next_pushed()
 #    on_buzzer_pushed()
 
     try:
