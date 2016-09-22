@@ -16,7 +16,7 @@ resolution = (1440, 1050)
 BUZZER_DELAY = 0
 
 # Time between take_pic() and the actual DSLR click
-CLICK_DELAY = 0.25
+CLICK_DELAY = 0.24
 
 BUZZER_PIN = 3
 BUTTON_UP_PIN = 5
@@ -49,7 +49,7 @@ def cancel_timer(timer):
 def process_image(cam, filename):
     global cam_setting_delta_ema
     config_delta = cam.check_brightness(filename)
-    alpha = 0.1
+    alpha = 0.2
     cam_setting_delta_ema = alpha * config_delta + (1-alpha) * cam_setting_delta_ema
     cam.store_pic(output_dir)
     print("cam_setting_delta_ema = %f"%cam_setting_delta_ema)
