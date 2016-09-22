@@ -84,8 +84,7 @@ with Display(resolution) as display:
         global pic_shown
         pic_shown = -1
         pics = cam.get_all_pics(pics_dir)
-        print([pics])
-        display.show_images_fullscreen(pics)
+        display.show_images_fullscreen(pics, 'minimize')
 
     def set_timers(show_small_video=True):
         global show_video_small_timer

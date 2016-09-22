@@ -36,7 +36,7 @@ class Display(PiCamera):
 
         #small window
         self.small_window_size = (int(size[0]/2.8), int(size[1]/2.8))
-        self.small_window_area = (175, -3, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
+        self.small_window_area = (235, -3, self.size[0] - self.small_window_size[0], self.size[1] - self.small_window_size[1])
 
     def start_preview(self):
         if self.previewing == True:
@@ -71,6 +71,9 @@ class Display(PiCamera):
     def toggle_small_window_position(self, overlay):
         print("Timer:")
         print(overlay)
+        print(overlay.layer)
+        print(self.toggle_timers)
+        print("--------------")
         timer = self.toggle_timers[overlay.layer]
         if timer is not None:
             timer.cancel()
@@ -102,14 +105,15 @@ class Display(PiCamera):
         if self.preview is not None:
             self.clear_layer(self.preview.layer)
 
-    def show_images_fullscreen(self, image_paths, layer=BACKGROUND, minimize_hide_or_keep_video='hide'):
+    def show_images_fullscreen(self, image_paths, minimize_hide_or_keep_video='hide', layer=BACKGROUND):
         timer = self.toggle_timers[layer]
         if timer is not None:
             timer.cancel()
-        with Image.open(image_paths[randint(0, len(image_paths)-1)]) as image: 
-            self.show_image_fullscreen(image, layer, 'hide')
 
-        timer = self.toggle_timers[layer] = Timer(FULLSCREEN_IMAGE_TOGGLE_TIME, self.show_images_fullscreen, (image_paths, layer, minimize_hide_or_keep_video))
+        with Image.open(image_paths[randint(0, len(image_paths)-1)]) as image: 
+            self.show_image_fullscreen(image, layer, minimize_hide_or_keep_video)
+
+        timer = self.toggle_timers[layer] = Timer(FULLSCREEN_IMAGE_TOGGLE_TIME, self.show_images_fullscreen, (image_paths, minimize_hide_or_keep_video, layer))
         self.toggle_timers[layer] = timer
         timer.start()
 
