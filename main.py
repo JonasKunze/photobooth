@@ -60,16 +60,39 @@ with Display(resolution) as display:
     show_video_small_timer = None
     show_history_timer = None
 
-    def on_buzzer_pushed():
-        print("buzzer pushed")
+    def clear_timers():
         global show_video_small_timer
         global show_history_timer
+
         cancel_timer(show_video_small_timer)
         cancel_timer(show_history_timer)
         show_video_small_timer = None
         show_history_timer = None
 
+    def show_history():
+        global pic_shown
+        pic_shown = -1
+        pics = cam.get_all_pics(pics_dir)
+        print(pics)
+        print([pics])
+        display.show_images_fullscreen(pics)
+
+    def set_timers(show_small_video=True):
+        global show_video_small_timer
+        global show_history_timer
+
+        if show_small_video:
+            show_video_small_timer = Timer(10, display.show_video_small, ())
+            show_video_small_timer.start()
+
+        show_history_timer = Timer(40, show_history, ())
+        show_history_timer.start()
+
+    def on_buzzer_pushed():
+        print("buzzer pushed")
         display.show_video_fullscreen()
+        
+        clear_timers()
 
         time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
         Timer(CLICK_DELAY, display.flash,()).start() 
@@ -84,44 +107,32 @@ with Display(resolution) as display:
             display.show_image_fullscreen(img)
             img_processor = Thread(target=process_image, args=(cam, filename))
             img_processor.start()
-
-            show_video_small_timer = Timer(10, display.show_video_small, ())
-            show_video_small_timer.start()
-
-            show_history_timer = Timer(45, display.show_images_fullscreen, [cam.get_all_pics(pics_dir)])
-            show_history_timer.start()
-
+            set_timers()
 
     def on_next_pushed():
         print("next pushed")
-        global show_video_small_timer
-        global show_history_timer
         global pic_shown
-        cancel_timer(show_video_small_timer)
-        cancel_timer(show_history_timer)
-        show_video_small_timer = None
-        show_history_timer = None
+
+        clear_timers()
 
         images = cam.get_all_pics(pics_dir)
-        if pic_shown > -1:
-            if pic_shown < len(images) - 1:
+        if pic_shown == -1 or pic_shown == len(images) - 1:
+            pic_shown = -1
+            display.show_video_fullscreen()
+            set_timers(False)
+        else:
+            if pic_shown > -1:
                 pic_shown = pic_shown + 1
-            else:
-                pic_shown = -1
-                display.show_video_fullscreen()
+                
         if pic_shown > -1 and len(images) > 0: 
             with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
                 display.show_image_fullscreen(image)
+            set_timers(True)
 
     def on_prev_pushed():
         print("prev pushed")
-        global show_video_small_timer
-        global show_history_timer
         global pic_shown
-        cancel_timer(show_video_small_timer)
-        cancel_timer(show_history_timer)
-        show_video_small_timer = None
-        show_history_timer = None
+        clear_timers()
 
         images = cam.get_all_pics(pics_dir)
         if pic_shown > 0:
@@ -131,6 +142,7 @@ with Display(resolution) as display:
         if len(images) > 0:
             with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
                 display.show_image_fullscreen(image)
+        set_timers()
  
 
     buzzer.when_pressed = on_buzzer_pushed

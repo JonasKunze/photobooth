@@ -31,7 +31,7 @@ class Display(PiCamera):
         self.previewing_small = False
         self.current_small_window_id = -1
         self.zoom=(0.1, 0.1, 1, 1)
-        self.fullscreen_window = (176, -3, self.size[0], self.size[1]) 
+        self.fullscreen_window = (235, -3, self.size[0], self.size[1]) 
         self.is_flashing = False
 
         #small window
@@ -69,6 +69,8 @@ class Display(PiCamera):
         print("Showing fullscreen video on layer %d"%layer)
 
     def toggle_small_window_position(self, overlay):
+        print("Timer:")
+        print(overlay)
         timer = self.toggle_timers[overlay.layer]
         if timer is not None:
             timer.cancel()
