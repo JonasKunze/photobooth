@@ -72,6 +72,9 @@ class Cam():
         self.led_low.on()
 
     def change_setting(self, delta):
+        if self.config + delta > len(CONFIGS) - 1 or self.config + delta  < 0:
+            return self.config
+
         self.config = self.config + delta
         self.camera.set_shutter_speed(secs=CONFIGS[self.config][0])
 
@@ -79,6 +82,14 @@ class Cam():
         print("Changed config to %s %s" % CONFIGS[self.config])
         self.store_settings()
         return self.config
+
+    def set_brightness_leds(self, adjustment):
+        self.led_low.off()
+        self.led_high.off()
+        if adjustment < 0:
+            self.led_high.on()
+        if adjustment > 0:
+            self.led_low.on()
 
     def get_brightness_adj(self, filename):
         brightness = float(ImageAnalyzer.mean_brightness(filename))
@@ -111,9 +122,7 @@ class Cam():
     def check_brightness(self, filename=None):
         filename = filename or self.filename
         config_delta = self.get_brightness_adj(filename)
-        if config_delta != 0: 
-            self.config = self.change_setting(config_delta)
-            return self.config, False 
+        self.set_brightness_leds(config_delta)
         return config_delta
 
     def increase_brightness(self):

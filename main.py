@@ -13,7 +13,7 @@ import time
 resolution = (1440, 1050)
 
 # time between pressing buzzer and the picture taken
-BUZZER_DELAY = 2
+BUZZER_DELAY = 0
 
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.25
@@ -36,6 +36,9 @@ output_dir = '%s/%s' % (pics_dir, date_str)
 
 pic_shown = -1 
 
+# exponentially moving average of cam setting deltas
+cam_setting_delta_ema = 0
+
 def cancel_timer(timer):
     if timer != None:
         try:
@@ -44,8 +47,16 @@ def cancel_timer(timer):
             pass
 
 def process_image(cam, filename):
-    cam.check_brightness(filename)
+    global cam_setting_delta_ema
+    config_delta = cam.check_brightness(filename)
+    alpha = 0.1
+    cam_setting_delta_ema = alpha * config_delta + (1-alpha) * cam_setting_delta_ema
     cam.store_pic(output_dir)
+    print("cam_setting_delta_ema = %f"%cam_setting_delta_ema)
+    print("delta = %f"%config_delta)
+    if abs(cam_setting_delta_ema) > 0.5: 
+        cam.change_setting(round(cam_setting_delta_ema))
+        cam_setting_delta_ema = 0
 
 cam = Cam()
 cam.set_pic_store_dir(output_dir)
@@ -73,7 +84,6 @@ with Display(resolution) as display:
         global pic_shown
         pic_shown = -1
         pics = cam.get_all_pics(pics_dir)
-        print(pics)
         print([pics])
         display.show_images_fullscreen(pics)
 
