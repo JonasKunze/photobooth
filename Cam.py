@@ -156,7 +156,7 @@ class Cam():
             self.pic_id += 1
     def get_all_pics(self, dirname=None):
         dirname = dirname or self.store_dirname 
-        code, out, err = self.camera.call(["find %s -name '*.jpg'"%dirname])  
+        code, out, err = self.camera.call(["find %s -name '*.jpg'|sort"%dirname])  
         return out.splitlines()
 
     def load_config(self):
