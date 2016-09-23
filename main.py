@@ -13,7 +13,7 @@ import time
 resolution = (1440, 1050)
 
 # time between pressing buzzer and the picture taken
-BUZZER_DELAY = 0
+BUZZER_DELAY = 2
 
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.24
