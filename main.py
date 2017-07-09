@@ -13,7 +13,7 @@ import time
 resolution = (1440, 1050)
 
 # time between pressing buzzer and the picture taken
-BUZZER_DELAY = 2
+BUZZER_DELAY = 2.0 
 
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.24
@@ -55,7 +55,7 @@ def process_image(cam, filename):
     print("cam_setting_delta_ema = %f"%cam_setting_delta_ema)
     print("delta = %f"%config_delta)
     if abs(cam_setting_delta_ema) > 0.5: 
-        cam.change_setting(round(cam_setting_delta_ema))
+#        cam.change_setting(round(cam_setting_delta_ema))
         cam_setting_delta_ema = 0
 
 cam = Cam()

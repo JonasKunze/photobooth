@@ -26,6 +26,7 @@ class Display(PiCamera):
         self.framerate = 25 
         self.rotation = -90
         self.hflip = True
+
         self.all_overlays = [None]*FOREGROUND*2 
         self.toggle_timers = [None]*len(self.all_overlays) 
         self.previewing_small = False
