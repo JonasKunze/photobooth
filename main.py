@@ -30,7 +30,7 @@ button_down = Button(BUTTON_DOWN_PIN, bounce_time=0.1)
 button_next = Button(BUTTON_NEXT, bounce_time=0.1)
 button_prev = Button(BUTTON_PREV, bounce_time=0.1)
 
-date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 pics_dir = './pics'
 output_dir = '%s/%s' % (pics_dir, date_str)
 
