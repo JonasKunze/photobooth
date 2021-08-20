@@ -30,9 +30,7 @@ button_down = Button(BUTTON_DOWN_PIN, bounce_time=0.1)
 button_next = Button(BUTTON_NEXT, bounce_time=0.1)
 button_prev = Button(BUTTON_PREV, bounce_time=0.1)
 
-date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 pics_dir = './pics'
-output_dir = '%s/%s' % (pics_dir, date_str)
 hidden_dir = '%s/hidden' % pics_dir
 
 pic_shown = -1
@@ -54,7 +52,7 @@ def process_image(cam, filename):
     config_delta = cam.check_brightness(filename)
     alpha = 0.2
     cam_setting_delta_ema = alpha * config_delta + (1 - alpha) * cam_setting_delta_ema
-    cam.store_pic(output_dir)
+    cam.store_pic()
     print("cam_setting_delta_ema = %f" % cam_setting_delta_ema)
     print("delta = %f" % config_delta)
     if abs(cam_setting_delta_ema) > 0.5:
@@ -63,7 +61,7 @@ def process_image(cam, filename):
 
 
 cam = Cam()
-cam.set_pic_store_dir(pics_dir, output_dir, hidden_dir)
+cam.set_pic_store_dir(pics_dir, hidden_dir)
 button_up.when_pressed = cam.increase_brightness
 button_down.when_pressed = cam.hide_pictures
 

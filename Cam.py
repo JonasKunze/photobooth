@@ -1,4 +1,5 @@
 # coding: utf-8
+import datetime
 
 from gphoto import GPhoto
 from gphoto import ImageAnalyzer
@@ -140,8 +141,11 @@ class Cam():
         if self.pics_dir is not None:
             code, out, err = self.camera.call(["mv %s/* %s/" % (self.pics_dir, self.hidden_dir)])
             call(["mkdir", "-p", self.store_dirname])
+            self.set_pic_store_dir(self.pics_dir, self.hidden_dir)
 
-    def set_pic_store_dir(self, pics_dir, output_dir, hidden_dir):
+    def set_pic_store_dir(self, pics_dir, hidden_dir):
+        date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        output_dir = '%s/%s' % (pics_dir, date_str)
         call(["mkdir", "-p", output_dir])
         call(["mkdir", "-p", hidden_dir])
         self.pics_dir = pics_dir
