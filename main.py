@@ -33,6 +33,7 @@ button_prev = Button(BUTTON_PREV, bounce_time=0.1)
 date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 pics_dir = './pics'
 output_dir = '%s/%s' % (pics_dir, date_str)
+hidden_dir = '%s/hidden' % pics_dir
 
 pic_shown = -1
 
@@ -62,9 +63,9 @@ def process_image(cam, filename):
 
 
 cam = Cam()
-cam.set_pic_store_dir(output_dir)
+cam.set_pic_store_dir(pics_dir, output_dir, hidden_dir)
 button_up.when_pressed = cam.increase_brightness
-button_down.when_pressed = cam.decrease_brightness
+button_down.when_pressed = cam.hide_pictures
 
 with Display(resolution) as display:
     display.show_video_fullscreen()

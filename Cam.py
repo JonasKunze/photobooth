@@ -135,9 +135,18 @@ class Cam():
         self.brightness -= 8
         self.change_setting(-1)
 
-    def set_pic_store_dir(self, dirname):
-        call(["mkdir", "-p", dirname])
-        self.store_dirname = dirname
+    def hide_pictures(self):
+        print("hiding pictures")
+        if self.pics_dir is not None:
+            code, out, err = self.camera.call(["mv %s/* %s/" % (self.pics_dir, self.hidden_dir)])
+            call(["mkdir", "-p", self.store_dirname])
+
+    def set_pic_store_dir(self, pics_dir, output_dir, hidden_dir):
+        call(["mkdir", "-p", output_dir])
+        call(["mkdir", "-p", hidden_dir])
+        self.pics_dir = pics_dir
+        self.store_dirname = output_dir
+        self.hidden_dir = hidden_dir
 
     def store_pic(self, dirname=None):
         if self.filename is not None:
@@ -157,7 +166,9 @@ class Cam():
 
     def get_all_pics(self, dirname=None):
         dirname = dirname or self.store_dirname
-        code, out, err = self.camera.call(["find %s -name '*.jpg'|sort" % dirname])
+        code, out, err = self.camera.call(
+            ["find %s -path %s -prune -false -o -name '*.jpg'|sort" % (dirname, self.hidden_dir)])
+        print(out.splitlines())
         return out.splitlines()
 
     def load_config(self):
