@@ -2,8 +2,8 @@
 # coding: utf-8
 
 
-from Display import Display 
-from Cam import Cam 
+from Display import Display
+from Cam import Cam
 from PIL import Image
 from gpiozero import Button
 from threading import Timer, Thread
@@ -13,7 +13,7 @@ import time
 resolution = (1440, 1050)
 
 # time between pressing buzzer and the picture taken
-BUZZER_DELAY = 2.0 
+BUZZER_DELAY = 2.0
 
 # Time between take_pic() and the actual DSLR click
 CLICK_DELAY = 0.24
@@ -34,10 +34,11 @@ date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 pics_dir = './pics'
 output_dir = '%s/%s' % (pics_dir, date_str)
 
-pic_shown = -1 
+pic_shown = -1
 
 # exponentially moving average of cam setting deltas
 cam_setting_delta_ema = 0
+
 
 def cancel_timer(timer):
     if timer != None:
@@ -46,30 +47,34 @@ def cancel_timer(timer):
         except:
             pass
 
+
 def process_image(cam, filename):
     global cam_setting_delta_ema
     config_delta = cam.check_brightness(filename)
     alpha = 0.2
-    cam_setting_delta_ema = alpha * config_delta + (1-alpha) * cam_setting_delta_ema
+    cam_setting_delta_ema = alpha * config_delta + (1 - alpha) * cam_setting_delta_ema
     cam.store_pic(output_dir)
-    print("cam_setting_delta_ema = %f"%cam_setting_delta_ema)
-    print("delta = %f"%config_delta)
-    if abs(cam_setting_delta_ema) > 0.5: 
-#        cam.change_setting(round(cam_setting_delta_ema))
+    print("cam_setting_delta_ema = %f" % cam_setting_delta_ema)
+    print("delta = %f" % config_delta)
+    if abs(cam_setting_delta_ema) > 0.5:
+        #        cam.change_setting(round(cam_setting_delta_ema))
         cam_setting_delta_ema = 0
+
 
 cam = Cam()
 cam.set_pic_store_dir(output_dir)
-button_up.when_pressed = cam.increase_brightness 
+button_up.when_pressed = cam.increase_brightness
 button_down.when_pressed = cam.decrease_brightness
+
 with Display(resolution) as display:
     display.show_video_fullscreen()
-    
-#    with Image.open(".capture.jpg") as img:
-#        display.show_image_fullscreen(img)
+
+    #    with Image.open(".capture.jpg") as img:
+    #        display.show_image_fullscreen(img)
 
     show_video_small_timer = None
     show_history_timer = None
+
 
     def clear_timers():
         global show_video_small_timer
@@ -80,11 +85,13 @@ with Display(resolution) as display:
         show_video_small_timer = None
         show_history_timer = None
 
+
     def show_history():
         global pic_shown
         pic_shown = -1
         pics = cam.get_all_pics(pics_dir)
         display.show_images_fullscreen(pics, 'minimize')
+
 
     def set_timers(show_small_video=True):
         global show_video_small_timer
@@ -97,15 +104,16 @@ with Display(resolution) as display:
         show_history_timer = Timer(40, show_history, ())
         show_history_timer.start()
 
+
     def on_buzzer_pushed():
         print("buzzer pushed")
         display.show_video_fullscreen()
-        
+
         clear_timers()
 
         time.sleep(BUZZER_DELAY or CLICK_DELAY - CLICK_DELAY)
-        Timer(CLICK_DELAY, display.flash,()).start() 
-        
+        Timer(CLICK_DELAY, display.flash, ()).start()
+
         try:
             filename = cam.take_pic()
         except:
@@ -117,6 +125,7 @@ with Display(resolution) as display:
             img_processor = Thread(target=process_image, args=(cam, filename))
             img_processor.start()
             set_timers()
+
 
     def on_next_pushed():
         print("next pushed")
@@ -132,11 +141,12 @@ with Display(resolution) as display:
         else:
             if pic_shown > -1:
                 pic_shown = pic_shown + 1
-                
-        if pic_shown > -1 and len(images) > 0: 
+
+        if pic_shown > -1 and len(images) > 0:
             with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
                 display.show_image_fullscreen(image)
             set_timers(True)
+
 
     def on_prev_pushed():
         print("prev pushed")
@@ -152,14 +162,14 @@ with Display(resolution) as display:
             with Image.open(cam.get_all_pics(pics_dir)[pic_shown]) as image:
                 display.show_image_fullscreen(image)
         set_timers()
- 
+
 
     buzzer.when_pressed = on_buzzer_pushed
     button_next.when_pressed = on_next_pushed
     button_prev.when_pressed = on_prev_pushed
 
     on_next_pushed()
-#    on_buzzer_pushed()
+    #    on_buzzer_pushed()
 
     try:
         while cam.is_active():

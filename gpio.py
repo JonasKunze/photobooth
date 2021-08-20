@@ -5,16 +5,20 @@ import subprocess
 import math
 import time
 import os
-import sys 
+import sys
+
 
 def eprint(err):
     sys.stderr.write(err)
 
-def GPIO_init():  
+
+def GPIO_init():
     GPIO.setmode(GPIO.BCM)
 
+
 def GPIO_cleanup():
-    print "Cleaning up GPIO"
+    print
+    "Cleaning up GPIO"
     GPIO.cleanup()
 
 
@@ -25,41 +29,45 @@ class Button():
         if pin < 5:
             GPIO.setup(pin, GPIO.IN)
         else:
-            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  
+            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         self._start_listening()
 
     def _start_listening(self):
         GPIO.add_event_detect(self.pin, GPIO.FALLING, callback=self._on_pushed_once, bouncetime=self.debounce_ms)
-        
-    def _on_pushed_once(self, channel):  
-        GPIO.remove_event_detect (self.pin)
+
+    def _on_pushed_once(self, channel):
+        GPIO.remove_event_detect(self.pin)
         if hasattr(self, 'on_pushed'):
             self.on_pushed()
         else:
             eprint('Button.on_pushed() not defined!')
         self._start_listening()
 
+
 class Led():
     def __init__(self, pin):
         self.pin = pin
 
         GPIO.setup(pin, GPIO.OUT)
+
     def on(self):
         GPIO.output(self.pin, GPIO.HIGH)
+
     def off(self):
         GPIO.output(self.pin, GPIO.LOW)
+
     def set(self, on):
         GPIO.output(self.pin, on)
+
     def toggle(self):
         GPIO.output(self.pin, not GPIO.input(self.pin))
 
-
-#BUTTON = 3 # connects to ground
-#LED = 4 # connects to ground
-#running = True
+# BUTTON = 3 # connects to ground
+# LED = 4 # connects to ground
+# running = True
 #
-#def main():
+# def main():
 #    button = Button(BUTTON, 100)
 #    led = Led(LED)
 #    led.off()
@@ -73,9 +81,9 @@ class Led():
 #        time.sleep(1)
 # 
 #    
-#try:
+# try:
 #    GPIO_init()
 #    print("starting")
 #    main()
-#except KeyboardInterrupt:
+# except KeyboardInterrupt:
 #    GPIO_cleanup()
