@@ -168,7 +168,6 @@ class Cam():
         dirname = dirname or self.store_dirname
         code, out, err = self.camera.call(
             ["find %s -path %s -prune -false -o -name '*.jpg'|sort" % (dirname, self.hidden_dir)])
-        print(out.splitlines())
         return out.splitlines()
 
     def load_config(self):
