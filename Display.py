@@ -30,7 +30,7 @@ class Display(PiCamera):
         self.toggle_timers = [None] * len(self.all_overlays)
         self.previewing_small = False
         self.current_small_window_id = -1
-        self.zoom = (0.1, 0.1, 1, 1)
+        self.zoom = (0, 0, 1, 1)
         self.fullscreen_window = (235, -3, self.size[0], self.size[1])
         self.is_flashing = False
 
@@ -57,10 +57,11 @@ class Display(PiCamera):
             self.all_overlays[layer] = None
 
     def show_video_fullscreen(self, layer=BACKGROUND):
+        print("video fullscreen")
         self.clear_layer(layer)
 
         self.start_preview()
-        self.preview.fullscreen = False
+        self.preview.fullscreen = True
         self.preview.layer = layer
 
         # correction for weird vga display
@@ -145,6 +146,7 @@ class Display(PiCamera):
             (size[0] // 32) * 32,
             (size[1] // 16) * 16,
         )
+        img = img.resize(self.size)
 
         # make sure the image has the right size and is in RGB mode
         scale = 1
@@ -166,7 +168,7 @@ class Display(PiCamera):
         overlay = self.add_overlay(img.tostring(), img.size)
         self.all_overlays[layer] = overlay
         overlay.layer = layer
-        overlay.fullscreen = False
+        overlay.fullscreen = True
         return overlay
 
     def flash(self):

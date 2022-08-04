@@ -10,7 +10,7 @@ from threading import Timer, Thread
 import datetime
 import time
 
-resolution = (1440, 1050)
+resolution = (1680, 1050)
 
 # time between pressing buzzer and the picture taken
 BUZZER_DELAY = 2.0
